@@ -1,162 +1,3 @@
-#[cfg(test)]
-mod tests {
-    use crate::vec_3::Unit;
-    use crate::vec_3::Vec3;
-
-    #[test]
-    fn unit_magnitude_1() {
-        let _u = Unit::I(1.5923);
-
-        assert_eq!(_u.mag(), 1.5923);
-    }
-
-    #[test]
-    fn unit_magnitude_2() {
-        let _u = Unit::I(3.52);
-
-        assert_eq!(_u.mag(), 3.52);
-    }
-
-    #[test]
-    fn unit_magnitude_3() {
-        let _u = Unit::I(99.2452);
-
-        assert_eq!(_u.mag(), 99.2452);
-    }
-
-    #[test]
-    fn unit_add_1() {
-        let _u = Unit::I(1.5);
-        let _v = Unit::I(5.5);
-
-        assert_eq!(_u + _v, Unit::I(7.0));
-    }
-
-    #[test]
-    fn unit_add_2() {
-        let _u = Unit::I(1.5);
-        let _v = Unit::J(5.5);
-
-        assert_eq!(_u + _v, _u);
-    }
-
-    #[test]
-    fn unit_add_3() {
-        let _u = Unit::K(9.25);
-        let _v = Unit::K(11.75);
-
-        assert_eq!(_u + _v, Unit::K(21.0));
-    }
-
-    #[test]
-    fn unit_sub_1() {
-        let _u = Unit::K(9.25);
-        let _v = Unit::K(11.75);
-
-        assert_eq!(_u - _v, Unit::K(-2.5));
-    }
-
-    #[test]
-    fn unit_sub_2() {
-        let _u = Unit::I(10.0);
-        let _v = Unit::I(2.5);
-
-        assert_eq!(_u - _v, Unit::I(7.5));
-    }
-
-    #[test]
-    fn unit_sub_3() {
-        let _u = Unit::I(10.0);
-        let _v = Unit::K(5.0);
-
-        assert_eq!(_u - _v, _u);
-    }
-
-    #[test]
-    fn unit_mul_1() {
-        let _u = Unit::I(3.0);
-        let _v = Unit::J(9.5);
-
-        assert_eq!(_u * _v, Unit::K(28.5));
-    }
-
-    #[test]
-    fn unit_mul_2() {
-        let _u = Unit::K(7.0);
-        let _v = Unit::J(3.0);
-
-        assert_eq!(_u * _v, Unit::I(-21.0));
-    }
-
-    #[test]
-    fn unit_mul_3() {
-        let _u = Unit::I(3.0);
-        let _v = Unit::I(9.5);
-
-        assert_eq!(_u * _v, Unit::I(0.0));
-    }
-
-    #[test]
-    fn vec_add_1() {
-        let _u = Vec3::create(1.0, 2.0, 3.0);
-        let _v = Vec3::create(4.0, 5.0, 6.0);
-
-        let r = Vec3::create(5.0, 7.0, 9.0);
-
-        assert_eq!(_u + _v, r);
-    }
-
-    #[test]
-    fn vec_add_2() {
-        let _u = Vec3::create(-1.0, 50.0, -27.5);
-        let _v = Vec3::create(77.0, -423.3, 99.21);
-
-        let r = Vec3::create(76.0, -373.3, 71.71);
-
-        assert_eq!(_u + _v, r);
-    }
-
-    #[test]
-    fn vec_sub_1() {
-        let _u = Vec3::create(1.0, 2.0, 3.0);
-        let _v = Vec3::create(4.0, 5.0, 6.0);
-
-        let r = Vec3::create(-3.0, -3.0, -3.0);
-
-        assert_eq!(_u - _v, r);
-    }
-
-    #[test]
-    fn vec_sub_2() {
-        let _u = Vec3::create(10.0, 10.0, 10.0);
-        let _v = Vec3::create(10.0, 5.0, 0.0);
-
-        let r = Vec3::create(0.0, 5.0, 10.0);
-
-        assert_eq!(_u - _v, r);
-    }
-
-    #[test]
-    fn vec_mul_1() {
-        let _u = Vec3::create(1.0, 2.0, 3.0);
-        let _v = Vec3::create(4.0, 5.0, 6.0);
-
-        let r = Vec3::create(-3.0, 6.0, -3.0);
-
-        assert_eq!(_u * _v, r);
-    }
-
-    #[test]
-    fn vec_mul_2() {
-        let _u = Vec3::create(1.0, 0.0, 0.0);
-        let _v = Vec3::create(0.0, 1.0, 0.0);
-
-        let r = Vec3::create(0.0, 0.0, 1.0);
-
-        assert_eq!(_u * _v, r);
-    }
-}
-
 pub mod vec_3 {
     use std::fmt;
     use std::ops;
@@ -177,7 +18,7 @@ pub mod vec_3 {
         z: Unit::K(1.0),
     };
 
-    #[derive(Copy, Clone)]
+    #[derive(Debug, Copy, Clone)]
     pub enum Unit {
         I(f64),
         J(f64),
@@ -287,10 +128,45 @@ pub mod vec_3 {
             }
         }
     }
+    #[derive(Debug)]
     pub struct Vec3 {
         pub x: Unit,
         pub y: Unit,
         pub z: Unit,
+    }
+
+    pub struct Vec3IntoIterator {
+        vec3: Vec3,
+        index: usize,
+    }
+
+    impl IntoIterator for Vec3 {
+        type Item = Unit;
+        type IntoIter = Vec3IntoIterator;
+
+        fn into_iter(self) -> Self::IntoIter {
+            Vec3IntoIterator {
+                vec3: self,
+                index: 0,
+            }
+        }
+    }
+
+    impl Iterator for Vec3IntoIterator {
+        type Item = Unit;
+
+        fn next(&mut self) -> Option<Unit> {
+            let res = match self.index {
+                0 => self.vec3.x,
+                1 => self.vec3.y,
+                2 => self.vec3.z,
+                _ => return None,
+            };
+
+            self.index += 1;
+
+            Some(res)
+        }
     }
 
     impl Vec3 {
@@ -321,7 +197,7 @@ pub mod vec_3 {
         }
 
         pub fn angle_r(&self, other: &Vec3) -> f64 {
-            (self.dot(&other) / (self.mag() * other.mag())).acos()
+            (self.dot(&other) / (self.mag() * &other.mag())).acos()
         }
 
         pub fn angle_d(&self, other: &Vec3) -> f64 {
@@ -383,5 +259,106 @@ pub mod vec_3 {
                 z: Unit::K(self.x.mag() * other.y.mag() - self.y.mag() * other.x.mag()),
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::vec_3::Unit;
+    use crate::vec_3::Vec3;
+
+    #[test]
+    fn unit_magnitude() {
+        let _u = Unit::I(1.5923);
+        assert_eq!(_u.mag(), 1.5923);
+
+        let _u = Unit::I(3.52);
+        assert_eq!(_u.mag(), 3.52);
+
+        let _u = Unit::I(99.2452);
+        assert_eq!(_u.mag(), 99.2452);
+    }
+
+    #[test]
+    fn unit_add() {
+        let _u = Unit::I(1.5);
+        let _v = Unit::I(5.5);
+        assert_eq!(_u + _v, Unit::I(7.0));
+
+        let _u = Unit::I(1.5);
+        let _v = Unit::J(5.5);
+        assert_eq!(_u + _v, _u);
+
+        let _u = Unit::K(9.25);
+        let _v = Unit::K(11.75);
+        assert_eq!(_u + _v, Unit::K(21.0));
+    }
+
+    #[test]
+    fn unit_sub() {
+        let _u = Unit::K(9.25);
+        let _v = Unit::K(11.75);
+        assert_eq!(_u - _v, Unit::K(-2.5));
+
+        let _u = Unit::I(10.0);
+        let _v = Unit::I(2.5);
+        assert_eq!(_u - _v, Unit::I(7.5));
+
+        let _u = Unit::I(10.0);
+        let _v = Unit::K(5.0);
+        assert_eq!(_u - _v, _u);
+    }
+
+    #[test]
+    fn unit_mul() {
+        let _u = Unit::I(3.0);
+        let _v = Unit::J(9.5);
+        assert_eq!(_u * _v, Unit::K(28.5));
+
+        let _u = Unit::K(7.0);
+        let _v = Unit::J(3.0);
+        assert_eq!(_u * _v, Unit::I(-21.0));
+
+        let _u = Unit::I(3.0);
+        let _v = Unit::I(9.5);
+        assert_eq!(_u * _v, Unit::I(0.0));
+    }
+
+    #[test]
+    fn vec_add() {
+        let _u = Vec3::create(1.0, 2.0, 3.0);
+        let _v = Vec3::create(4.0, 5.0, 6.0);
+        let r = Vec3::create(5.0, 7.0, 9.0);
+        assert_eq!(_u + _v, r);
+
+        let _u = Vec3::create(-1.0, 50.0, -27.5);
+        let _v = Vec3::create(77.0, -423.3, 99.21);
+        let r = Vec3::create(76.0, -373.3, 71.71);
+        assert_eq!(_u + _v, r);
+    }
+
+    #[test]
+    fn vec_sub() {
+        let _u = Vec3::create(1.0, 2.0, 3.0);
+        let _v = Vec3::create(4.0, 5.0, 6.0);
+        let r = Vec3::create(-3.0, -3.0, -3.0);
+        assert_eq!(_u - _v, r);
+
+        let _u = Vec3::create(10.0, 10.0, 10.0);
+        let _v = Vec3::create(10.0, 5.0, 0.0);
+        let r = Vec3::create(0.0, 5.0, 10.0);
+        assert_eq!(_u - _v, r);
+    }
+    #[test]
+    fn vec_mul_1() {
+        let _u = Vec3::create(1.0, 2.0, 3.0);
+        let _v = Vec3::create(4.0, 5.0, 6.0);
+        let r = Vec3::create(-3.0, 6.0, -3.0);
+        assert_eq!(_u * _v, r);
+
+        let _u = Vec3::create(1.0, 0.0, 0.0);
+        let _v = Vec3::create(0.0, 1.0, 0.0);
+        let r = Vec3::create(0.0, 0.0, 1.0);
+        assert_eq!(_u * _v, r);
     }
 }
